@@ -80,18 +80,22 @@ assert.equal(r.status, "confirm");
 ok("a second stamp within 10 minutes asks for a confirm");
 await fails("till", "select public.till_add_stamps($1, 1, $2, '0000', true)", [sam.code, priya], "wrong_pin");
 await fails("till", "select public.till_add_stamps($1, 7, $2, '1234', true)", [sam.code, priya], "bad_quantity");
+assert.equal((await as("sam", "select public.my_card()")).card_size, 3);
 r = await as("till", "select public.till_add_stamps($1, 6, $2, '1234', true)", [sam.code, priya]);
-assert.equal(r.rewards_earned, 1); assert.equal(r.card.progress, 0); assert.equal(r.card.rewards_available, 1);
+// 2 + 6 = 8 coffees: two full cards of 3 (two free coffees) and 2 stamps on the next card.
+assert.equal(r.rewards_earned, 2); assert.equal(r.card.progress, 2); assert.equal(r.card.rewards_available, 2);
 assert.equal(r.card.total_coffees, 8);
-ok("reaching 8 coffees earns a free coffee and starts a fresh card");
+ok("every 3 coffees earn a free coffee, and extra stamps carry onto the next card");
 
+r = await as("till", "select public.till_redeem($1, $2, '1234')", [sam.code, priya]);
+assert.equal(r.card.rewards_available, 1);
 r = await as("till", "select public.till_redeem($1, $2, '1234')", [sam.code, priya]);
 assert.equal(r.card.rewards_available, 0);
 await fails("till", "select public.till_redeem($1, $2, '1234')", [sam.code, priya], "no_reward");
-ok("a free coffee can be used once, not twice");
+ok("each free coffee can be used once, not twice");
 
 const today = await as("till", "select public.till_today()");
-assert.equal(today.length, 3); assert.equal(today[0].kind, "reward"); assert.equal(today[0].staff, "Priya");
+assert.equal(today.length, 4); assert.equal(today[0].kind, "reward"); assert.equal(today[0].staff, "Priya");
 ok("today's log lists stamps and free coffees with the barista's name");
 
 // Undo
@@ -120,7 +124,9 @@ await db.exec(`insert into public.stamps (customer_id, qty, moment, shop, create
   ('${ids.amara}', 1, 'commute', 'High Cross', now() - interval '1 day')`);
 const a = await as("amara", "select public.my_card()");
 assert.deepEqual(a.moments, {commute: 4, mid: 0, lunch: 1, afternoon: 0});
-assert.deepEqual(a.stops.map(s => s.moment), ["commute","commute","commute","lunch","commute"]);
+// 5 coffees on a 3-stop card: one full card, then the last 2 coffees are on the current card.
+assert.equal(a.progress, 2);
+assert.deepEqual(a.stops.map(s => s.moment), ["lunch","commute"]);
 assert.equal(a.history[0].moment, "commute"); assert.equal(a.history.length, 3);
 ok("lifetime moment totals and card stops come back in the right order");
 

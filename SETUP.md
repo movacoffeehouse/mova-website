@@ -76,7 +76,7 @@ The owner login works on the till as well, and is the only login that can open `
 
 - Fill in the gaps marked `[ ]` in `privacy/index.html`: company name and number, the Supabase region, the email provider and how long you keep inactive cards. It's a starting point, not legal advice.
 - Train staff: pick name, PIN, scan, set the number of coffees, **Add stamps**. **Switch barista** at shift change.
-- Counter sign: "Join MOVA Miles: 8 coffees, 8 stops, the 9th is on us" with a QR code to `/miles`.
+- Counter sign: "Join MOVA Miles: 3 coffees, 3 stops, the 4th is on us" with a QR code to `/miles`.
 
 ## Part 7 · Wallet card (later, with Passcreator)
 
@@ -84,7 +84,7 @@ Already in place: every member has a code (`MV` + 4 characters), and their QR co
 
 **What you'll do on Passcreator**
 1. Create an account and start a **Store card / loyalty** template.
-2. Design it with the MOVA logo, terracotta background and cream text. Add fields named `stamps` (e.g. "5/8"), `mover` (e.g. "Early Mover") and `free_coffees`.
+2. Design it with the MOVA logo, terracotta background and cream text. Add fields named `stamps` (e.g. "2/3"), `mover` (e.g. "Early Mover") and `free_coffees`.
 3. Set the barcode to **QR**, with its value coming from a field named `member_code`.
 4. Copy your **API key** and the **template ID**, and send them to me in a private way. Don't put them in the website code.
 

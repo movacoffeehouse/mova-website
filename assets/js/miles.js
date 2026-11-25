@@ -36,7 +36,7 @@
         <p class="eyebrow">MOVA Miles</p>
         <h1>${join ? "Every coffee moves you down the line." : "Welcome back."}</h1>
         <p class="muted">${join
-          ? "Eight coffees, eight stops. The end of the line is a free coffee on us. We'll also work out your MOVA moment: are you an Early Mover or an Afternoon Mover?"
+          ? "Three coffees, three stops. The fourth coffee is on us. We'll also work out your MOVA moment: are you an Early Mover or an Afternoon Mover?"
           : "Enter the email you joined with and we'll send you a sign-in link."}</p>
         ${join ? `<label class="field" for="name">First name<input id="name" autocomplete="given-name" maxlength="40" required></label>` : ""}
         <label class="field" for="email">Email<input id="email" type="email" autocomplete="email" inputmode="email" required></label>

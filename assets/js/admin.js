@@ -89,7 +89,7 @@
           </div>
         </div>
         <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Coffees</th><th>Card</th><th>Free ready</th><th>Mover type</th><th>Last visit</th><th>Emails OK</th></tr></thead><tbody>
-          ${rows.map((c) => `<tr><td>${esc(c.first_name)}</td><td>${esc(c.email)}</td><td style="font-family:var(--mono)">${esc(c.code)}</td><td class="num">${c.coffees}</td><td class="num">${c.progress}/8</td><td class="num">${c.rewards_available}</td><td>${c.top_moment ? MOMENTS[c.top_moment].persona : "–"}</td><td>${c.last_visit ? ago(c.last_visit) : "–"}</td><td>${c.marketing_opt_in ? "Yes" : "No"}</td></tr>`).join("")
+          ${rows.map((c) => `<tr><td>${esc(c.first_name)}</td><td>${esc(c.email)}</td><td style="font-family:var(--mono)">${esc(c.code)}</td><td class="num">${c.coffees}</td><td class="num">${c.progress}/${d.card_size}</td><td class="num">${c.rewards_available}</td><td>${c.top_moment ? MOMENTS[c.top_moment].persona : "–"}</td><td>${c.last_visit ? ago(c.last_visit) : "–"}</td><td>${c.marketing_opt_in ? "Yes" : "No"}</td></tr>`).join("")
             || `<tr><td colspan="9" class="muted">${q ? "No members match that search." : "No members yet."}</td></tr>`}
         </tbody></table></div>
       </section>`;

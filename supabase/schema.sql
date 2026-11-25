@@ -88,7 +88,7 @@ create policy "own redemptions" on public.redemptions for select to authenticate
 -- ---------- Settings --------------------------------------------------
 
 -- Card size and the moments of the day (UK time). Change here if the rules change.
-create or replace function private.card_size() returns int language sql immutable as $$ select 8 $$;
+create or replace function private.card_size() returns int language sql immutable as $$ select 3 $$;
 
 create or replace function public.moment_for(ts timestamptz) returns text
 language sql stable set search_path = '' as $$
@@ -409,6 +409,7 @@ declare
 begin
   perform private.require_shop(true);
   return jsonb_build_object(
+    'card_size',        private.card_size(),
     'members',          (select count(*) from public.customers),
     'members_this_week',(select count(*) from public.customers where created_at >= week_start),
     'marketing_opt_ins',(select count(*) from public.customers where marketing_opt_in),
