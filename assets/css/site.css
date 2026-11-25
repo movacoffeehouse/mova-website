@@ -253,3 +253,13 @@ svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-l
   html{scroll-behavior:auto}
   .marquee{white-space:normal}
 }
+
+/* Pastries list: two columns on wider screens */
+.rows.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px;border-top:0}
+.rows.two div{border-bottom:1px solid var(--line)}
+.rows.two div:nth-child(-n+2){border-top:1px solid var(--line)}
+.menu .note{margin-top:18px;font-size:15px;color:#4A403B}
+@media (max-width:640px){
+  .rows.two{grid-template-columns:minmax(0,1fr)}
+  .rows.two div:nth-child(2){border-top:0}
+}
