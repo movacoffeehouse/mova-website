@@ -26,8 +26,8 @@ to a real database, put it live and get the shop ready. Allow about an hour for 
 ## Part 2 · Sign-in emails
 
 1. **Authentication → URL Configuration**
-   - **Site URL**: your live address, e.g. `https://movacoffee.co.uk`
-   - **Redirect URLs**: add `https://movacoffee.co.uk/miles` (and your Vercel preview address, e.g. `https://mova-coffee.vercel.app/miles`, while testing)
+   - **Site URL**: your live address, e.g. `https://www.movacoffeehouse.com`
+   - **Redirect URLs**: add `https://www.movacoffeehouse.com/miles` (and your Vercel preview address, e.g. `https://mova-coffee.vercel.app/miles`, while testing)
 2. **Authentication → Email Templates → Magic Link**. Change the subject to `Your MOVA Miles sign-in link` and replace the text with something like:
 
    ```html
@@ -36,22 +36,22 @@ to a real database, put it live and get the shop ready. Allow about an hour for 
    <p><a href="{{ .ConfirmationURL }}">Open my card</a></p>
    ```
    Do the same for the **Confirm signup** template, which new members receive.
-3. **Before launch, set up your own email sender.** Supabase's built-in sender is for testing only and only sends a few emails an hour. Sign up for Resend (resend.com, free tier), verify your domain, then enter its SMTP details in **Project Settings → Authentication → SMTP Settings**. Set the sender to something like `hello@movacoffee.co.uk`.
+3. **Before launch, set up your own email sender.** Supabase's built-in sender is for testing only and only sends a few emails an hour. Sign up for Resend (resend.com, free tier), verify your domain, then enter its SMTP details in **Project Settings → Authentication → SMTP Settings**. Set the sender to something like `hello@movacoffeehouse.com`.
 
 ## Part 3 · Shop logins
 
 You need two logins: one for the till tablet and one for you.
 
 1. **Authentication → Users → Add user → Create new user**
-   - `till@movacoffee.co.uk` (any address you control) with a strong password, and tick **Auto confirm user**
-   - Your own owner login, e.g. `owner@movacoffee.co.uk`, with a different strong password
+   - `till@movacoffeehouse.com` (any address you control) with a strong password, and tick **Auto confirm user**
+   - Your own owner login, e.g. `owner@movacoffeehouse.com`, with a different strong password
 2. In **SQL Editor**, run this with your two email addresses:
 
    ```sql
    insert into public.shop_accounts (user_id, role)
-   select id, 'till'  from auth.users where email = 'till@movacoffee.co.uk';
+   select id, 'till'  from auth.users where email = 'till@movacoffeehouse.com';
    insert into public.shop_accounts (user_id, role)
-   select id, 'owner' from auth.users where email = 'owner@movacoffee.co.uk';
+   select id, 'owner' from auth.users where email = 'owner@movacoffeehouse.com';
    ```
 
 The owner login works on the till as well, and is the only login that can open `/admin` or undo stamps older than 30 minutes.
