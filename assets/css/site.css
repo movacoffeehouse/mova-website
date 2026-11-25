@@ -1,0 +1,255 @@
+/* MOVA Coffee · homepage
+   Idea: the day is a line with four stops (commute, mid-morning, lunch, afternoon).
+   The same route line as MOVA Miles runs through the page; times are set like a departures board. */
+:root{
+  --cream:#FAF4EC; --sand:#F3E8DA; --line:#E6D6C3; --ink:#2A2421; --espresso:#1F1916; --muted:#6B5E57;
+  --terra:#A8431B; --terra-deep:#7E3012; --on-terra:#FAF4EC; --leaf:#3F6B32;
+  --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --body:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'DM Mono',ui-monospace,Consolas,monospace;
+  --wrap:1200px; --gutter:24px; --radius:6px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+img{max-width:100%;height:auto;display:block}
+h1,h2,h3{margin:0;font-weight:500;text-wrap:balance}
+p{margin:0}
+a{color:var(--terra)}
+a:hover{color:var(--terra-deep)}
+:focus-visible{outline:3px solid var(--terra);outline-offset:3px}
+section[id]{scroll-margin-top:84px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
+.eyebrow{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--terra);font-weight:500}
+.time{font-family:var(--mono);font-weight:500;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--terra);color:var(--on-terra);text-decoration:none;padding:15px 28px;border-radius:999px;font-weight:500;font-size:16px;border:0;transition:background .2s}
+.btn:hover{background:var(--terra-deep);color:var(--on-terra)}
+.btn-line{display:inline-flex;align-items:center;border:1.5px solid currentColor;color:var(--ink);text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:500;font-size:16px}
+.btn-line:hover{color:var(--terra)}
+.h-xl{font-family:var(--display);font-size:clamp(52px,7.4vw,100px);line-height:.94;letter-spacing:-.015em}
+.h-l{font-family:var(--display);font-size:clamp(40px,5.2vw,68px);line-height:1}
+.lede{font-size:19px;color:#4A403B;max-width:40ch}
+
+/* Status bar: live open/closed */
+.status{background:var(--ink);color:var(--cream);font-size:14px}
+.status .wrap{display:flex;justify-content:space-between;align-items:center;gap:8px 20px;flex-wrap:wrap;padding-top:9px;padding-bottom:9px}
+.status a{color:var(--cream)}
+.live{display:inline-flex;align-items:center;gap:9px}
+.live i{width:9px;height:9px;border-radius:50%;background:#8FBF7A;box-shadow:0 0 0 0 rgba(143,191,122,.6);animation:ping 2s infinite}
+.live.closed i{background:#B5A595;animation:none}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(143,191,122,0)}100%{box-shadow:0 0 0 0 rgba(143,191,122,0)}}
+
+/* Header */
+.hdr{position:sticky;top:0;z-index:30;background:rgba(250,244,236,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px}
+.hdr img{height:48px;width:auto;transition:opacity .35s,transform .35s}
+.hdr.logo-hidden img{opacity:0;transform:translateY(-6px)}
+.nav{display:flex;align-items:center;gap:6px 26px;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.nav a{color:var(--ink);text-decoration:none;padding:10px 0}
+.nav a:hover{color:var(--terra)}
+.nav .btn{padding:11px 20px;font-size:13px;letter-spacing:.12em}
+
+/* Opening screen: just the logo, as it appears on the original artwork (terracotta on cream) */
+.hero{position:relative;background:var(--cream)}
+.hero-in{min-height:max(440px,calc(100svh - 114px));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;text-align:center;padding-top:32px;padding-bottom:72px}
+.hero h1{width:100%;display:flex;justify-content:center}
+.hero-logo{width:min(820px,84%);height:auto}
+.hero h1.reveal{animation-duration:1.4s}
+.scroll-cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:28px;height:44px;border:1.5px solid var(--terra);border-radius:14px;display:block}
+.scroll-cue span{position:absolute;left:50%;top:9px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--terra);animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(14px);opacity:0}100%{opacity:0}}
+
+/* Welcome: the coffee photo with the tagline and buttons */
+.welcome{position:relative;overflow:hidden;background:var(--espresso);color:var(--cream);isolation:isolate}
+.welcome-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;z-index:-2}
+.welcome::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at center,rgba(31,25,22,.6) 0%,rgba(31,25,22,.74) 55%,rgba(31,25,22,.88) 100%)}
+.welcome-in{min-height:clamp(480px,70vh,720px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:72px;padding-bottom:128px}
+.tagline{font-family:var(--display);font-size:clamp(40px,5.6vw,76px);line-height:1.02;text-wrap:balance}
+.tagline em{color:#EDB896}
+.welcome .lede{margin:22px auto 0;color:#E6D6C3;max-width:46ch}
+.welcome .ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:34px}
+.welcome .btn-line{color:var(--cream)}
+.welcome .btn-line:hover{color:#EDB896}
+.now-wrap{position:relative;z-index:2;display:flex;justify-content:center;margin:-72px var(--gutter) 40px}
+.now{width:min(460px,100%);background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:0 24px 40px -24px rgba(42,36,33,.45);display:flex;flex-direction:column;gap:6px}
+.now .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.now .time{white-space:nowrap;font-size:14px;color:var(--muted)}
+.now b{font-family:var(--display);font-size:26px;font-weight:600;line-height:1.05}
+.now p{font-size:15px;color:#4A403B}
+.reveal{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.reveal:nth-child(2){animation-delay:.08s}.reveal:nth-child(3){animation-delay:.16s}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* Moments marquee */
+.marquee{background:var(--terra);color:var(--on-terra);overflow:hidden;white-space:nowrap;border-block:1px solid var(--terra-deep)}
+.marquee-track{display:inline-flex;gap:0;padding:16px 0;animation:slide 38s linear infinite}
+.marquee span{font-family:var(--display);font-style:italic;font-size:30px;padding:0 22px}
+.marquee span::after{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--on-terra);margin-left:44px;vertical-align:middle}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* Facts strip */
+.facts{border-bottom:1px solid var(--line)}
+.facts .wrap{display:flex;flex-wrap:wrap;gap:12px 40px;justify-content:space-between;padding-top:22px;padding-bottom:22px;font-size:15px}
+.facts b{font-weight:600}
+
+/* A day at MOVA: the route */
+.day{padding-block:104px 96px}
+.day-head{display:flex;flex-wrap:wrap;gap:20px 48px;align-items:end;justify-content:space-between;margin-bottom:56px}
+.day-head > div{flex:1 1 420px;min-width:0}
+.day-head p{flex:1 1 320px;max-width:44ch;color:#4A403B}
+.route{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;position:relative}
+.route::before{content:"";position:absolute;left:0;right:0;top:11px;height:4px;background:var(--line);border-radius:2px}
+.route::after{content:"";position:absolute;left:0;top:11px;height:4px;background:var(--terra);border-radius:2px;width:var(--progress,0%);transition:width 1.2s cubic-bezier(.2,.7,.2,1)}
+.stop{position:relative;display:flex;flex-direction:column;gap:14px;padding-top:44px;min-width:0}
+.stop .dot{position:absolute;top:0;left:0;width:26px;height:26px;border-radius:50%;background:var(--cream);border:4px solid var(--line);z-index:1}
+.stop.past .dot{background:var(--terra);border-color:var(--terra)}
+.stop.here .dot{border-color:var(--terra);background:var(--cream)}
+.stop.here .dot::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid var(--terra);opacity:.5;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.here-tag{position:absolute;top:-2px;left:38px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;background:var(--terra);color:var(--on-terra);padding:3px 10px;border-radius:999px;font-weight:500}
+.stop .time{font-size:15px;color:var(--muted)}
+.stop h3{font-family:var(--display);font-size:32px;line-height:1;font-weight:600}
+@media (min-width:1001px){ .stop h3{min-height:2em} }
+.stop img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius)}
+.stop p{font-size:15px;color:#4A403B}
+.stop .pick{font-size:14px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.stop .pick span{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+
+/* Sandwiches */
+.sandwiches{background:var(--sand);padding-block:96px}
+.sandwiches .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:56px;align-items:start}
+.sandwiches .intro{display:flex;flex-direction:column;gap:20px}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0}
+.gallery figure{margin:0;position:relative;overflow:hidden;border-radius:var(--radius)}
+.gallery .big{grid-column:1/-1}
+.gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .6s}
+.gallery figure:hover img{transform:scale(1.03)}
+.gallery figcaption,.bakes figcaption{position:absolute;left:12px;bottom:12px;background:rgba(250,244,236,.94);color:var(--ink);font-size:13px;letter-spacing:.06em;padding:5px 12px;border-radius:999px}
+.sandwiches .intro p{color:#4A403B;max-width:44ch}
+.items{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:22px 0;border-bottom:1px solid var(--line)}
+.item h3{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.1}
+.item .price{font-weight:500;font-variant-numeric:tabular-nums;align-self:baseline}
+.item p{grid-column:1/-1;color:#4A403B;font-size:16px}
+.veg{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid var(--leaf);color:var(--leaf);border-radius:50%;font-family:var(--body);font-size:12px;font-weight:600;vertical-align:5px;margin-left:6px}
+
+/* Menu */
+.menu{padding-block:96px}
+.menu .h-l{margin:10px 0 40px}
+.bakes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 56px}
+.bakes figure{margin:0;position:relative;overflow:hidden;border-radius:var(--radius)}
+.bakes img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center 60%}
+.menu-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px}
+.menu-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.menu-col h3{font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:var(--terra);font-weight:600}
+.menu-col h3 + .rows{margin-top:2px}
+.menu-col h3.later{margin-top:28px}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.rows div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rows span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.menu-col .note{font-size:15px;color:#4A403B}
+
+/* MOVA Miles promo */
+.miles{background:var(--espresso);color:var(--cream);padding-block:104px;overflow:hidden}
+.miles .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:center}
+.miles .eyebrow{color:#E88A5A}
+.miles .h-l{margin-top:10px}
+.miles p{color:#D9C8B6;max-width:46ch;margin-top:20px}
+.miles .ctas{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.miles .ctas .note{font-size:14px;color:#B5A595}
+.ticket{background:var(--cream);color:var(--ink);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:22px;transform:rotate(-2deg);box-shadow:0 40px 60px -30px rgba(0,0,0,.6)}
+.ticket-top{display:flex;justify-content:space-between;align-items:center}
+.ticket-top img{height:34px;width:auto}
+.ticket-top .time{font-size:22px}
+.line8{display:flex;align-items:center}
+.line8 i{flex:none;width:18px;height:18px;border-radius:50%;border:3px solid var(--line);background:var(--cream)}
+.line8 i.on{background:var(--terra);border-color:var(--terra)}
+.line8 i.end{width:26px;height:26px;border-radius:7px;border-color:var(--ink)}
+.line8 b{flex:1;height:4px;background:var(--line)}
+.line8 b.on{background:var(--terra)}
+.movers{display:flex;flex-wrap:wrap;gap:8px}
+.movers span{border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px}
+.movers span.top{background:var(--terra);border-color:var(--terra);color:var(--on-terra)}
+.ticket small{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+/* Brand */
+.brand{padding-block:104px}
+.brand .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:start}
+.brand p{color:#4A403B;font-size:18px}
+.brand p + p{margin-top:18px}
+.soon{margin-top:28px;background:var(--sand);border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:6px}
+.soon b{font-family:var(--display);font-size:26px;font-weight:600}
+.soon p{font-size:16px}
+
+/* Visit */
+.visit{border-top:1px solid var(--line);padding-block:96px}
+.visit .grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:56px;align-items:start}
+.visit address{font-style:normal;font-size:20px;line-height:1.5;margin-top:24px}
+.hours{margin-top:28px;border-top:1px solid var(--line)}
+.hours div{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+.hours div.today{font-weight:600;color:var(--terra)}
+.contact{margin-top:22px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.contact a{display:inline-flex;align-items:center;gap:14px;padding:6px 0;text-decoration:none;color:var(--ink);min-width:0}
+.contact a span:last-child{border-bottom:1px solid transparent;overflow-wrap:anywhere}
+.contact a:hover span:last-child{color:var(--terra);border-bottom-color:currentColor}
+svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ic-sm{flex:none;width:40px;height:40px;border-radius:11px;border:1.5px solid var(--line);color:var(--terra);display:grid;place-items:center;transition:background .2s,color .2s,border-color .2s;--ic-bg:var(--cream)}
+.ic-sm svg{width:20px;height:20px}
+.contact a:hover .ic-sm{background:var(--terra);border-color:var(--terra);color:var(--on-terra);--ic-bg:var(--terra)}
+.map{width:100%;aspect-ratio:4/3;border:0;border-radius:var(--radius);background:var(--sand)}
+
+/* Footer */
+.ftr{background:var(--terra);color:var(--on-terra)}
+.ftr .top{display:flex;flex-wrap:wrap;gap:32px;align-items:end;justify-content:space-between;padding-top:56px;padding-bottom:36px}
+.ftr img{height:64px;width:auto}
+.ftr .tag{margin-top:16px;font-size:14px;letter-spacing:.24em;text-transform:uppercase}
+.icons{display:grid;grid-template-columns:repeat(6,minmax(0,92px));gap:14px}
+.icons a{display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--on-terra);text-decoration:none;font-size:13px;letter-spacing:.04em;text-align:center;padding:4px 0}
+.icons .ic{width:60px;height:60px;border-radius:16px;border:1.5px solid rgba(250,244,236,.55);display:grid;place-items:center;transition:background .2s,color .2s,transform .2s;--ic-bg:var(--terra)}
+.icons .ic svg{width:28px;height:28px}
+.icons a:hover .ic{background:var(--cream);color:var(--terra);border-color:var(--cream);transform:translateY(-2px);--ic-bg:var(--cream)}
+.icons a:hover{color:var(--on-terra)}
+/* MOVA Miles gets a solid badge so it reads as its own little logo */
+.icons a.feature .ic{background:var(--cream);color:var(--terra);border-color:var(--cream);--ic-bg:var(--cream)}
+.icons a.feature span:last-child{font-weight:600}
+.icons a.feature .ic svg{width:44px;height:14px;stroke-width:1.6}
+.ftr .base{border-top:1px solid rgba(250,244,236,.3);padding-top:18px;padding-bottom:26px;font-size:13px;color:#F3E3D3}
+
+/* Tablet */
+@media (max-width:1000px){
+  .route{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:48px}
+  .route::before,.route::after{display:none}
+  .sandwiches .grid,.miles .grid,.brand .grid,.visit .grid{grid-template-columns:minmax(0,1fr);gap:44px}
+  .sandwiches .intro{position:static}
+  .menu-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Phone */
+@media (max-width:640px){
+  :root{--gutter:16px}
+  body{font-size:16px}
+  .nav a.nav-link{display:none}
+  .hdr img{height:40px}
+  .hero-in{min-height:max(380px,calc(100svh - 150px));gap:24px}
+  .welcome-in{min-height:0;padding-top:56px;padding-bottom:104px}
+  .hero-logo{width:94%}
+  .now-wrap{margin:-64px 16px 32px}
+  .marquee span{font-size:24px}
+  .day,.sandwiches,.menu,.miles,.brand,.visit{padding-block:64px}
+  .route{grid-template-columns:minmax(0,1fr);row-gap:0}
+  .stop{padding:0 0 36px 48px}
+  .stop::before{content:"";position:absolute;left:11px;top:13px;bottom:0;width:4px;background:var(--line)}
+  .stop:last-child::before{display:none}
+  .stop.past::before{background:var(--terra)}
+  .here-tag{position:static;align-self:flex-start;order:-1}
+  .menu-cols{grid-template-columns:minmax(0,1fr);gap:36px}
+  .bakes{grid-template-columns:repeat(3,minmax(140px,1fr));overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:-16px;padding-inline:16px;gap:10px}
+  .bakes figure{scroll-snap-align:start}
+  .bakes figcaption{font-size:12px;left:8px;right:8px;bottom:8px;text-align:center}
+  .ticket{transform:none}
+  .icons{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;row-gap:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .marquee{white-space:normal}
+}

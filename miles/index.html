@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOVA Miles · MOVA Coffee</title>
+<meta name="description" content="MOVA Miles: the MOVA Coffee loyalty card. Every coffee moves you one stop down the line, and the eighth stop is a free coffee.">
+<meta name="theme-color" content="#A8431B">
+<link rel="icon" type="image/png" href="../images/mova-logo-terracotta.png">
+<link rel="apple-touch-icon" href="../images/mova-logo-terracotta.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&family=DM+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/css/miles.css">
+</head>
+<body>
+<header class="topbar"><div class="topbar-in">
+  <a href="../" aria-label="MOVA Coffee home"><img src="../images/mova-logo-terracotta.png" alt="MOVA Coffee"></a>
+  <span class="eyebrow">MOVA Miles</span>
+</div></header>
+
+<main class="narrow" id="app" aria-live="polite">
+  <p class="muted">Loading your card…</p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/mova.js"></script>
+<script src="../assets/js/miles.js"></script>
+</body>
+</html>
