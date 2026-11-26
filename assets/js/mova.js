@@ -49,7 +49,7 @@
     const msg = (err && (err.message || err.error_description)) || String(err || "");
     for (const k in ERRORS) if (msg.includes(k)) return ERRORS[k];
     if (/fetch|network/i.test(msg)) return "Can't reach the server. Check the internet connection and try again.";
-    if (/rate limit/i.test(msg)) return "Too many emails sent just now. Wait a minute and try again.";
+    if (/rate limit/i.test(msg)) return "We've sent a lot of sign-in emails in the last hour. Please try again a bit later, or ask us at the counter.";
     if (/invalid login/i.test(msg)) return "That email and password don't match.";
     return "Something went wrong (" + msg + "). Try again.";
   }
