@@ -129,7 +129,10 @@
 
   function update() { renderToast(); renderDetail(); focusCode(); }
   function renderToast() { const t = $("toast-slot"); if (t) t.innerHTML = ui.toast ? `<div class="toast" role="status">${ui.toast}</div>` : ""; }
-  function focusCode() { const c = $("code"); if (c && !ui.confirm) c.focus({ preventScroll: true }); }
+  // On a tablet or computer the code box stays ready for a plug-in scanner. On a phone, focusing it
+  // would keep popping up the keyboard, so we leave it alone there.
+  const isPhone = () => window.matchMedia("(max-width: 820px)").matches;
+  function focusCode() { const c = $("code"); if (c && !ui.confirm && !isPhone()) c.focus({ preventScroll: true }); }
 
   function renderDetail() {
     const el = $("detail");
@@ -198,6 +201,8 @@
     try { customer = await rpc(AREA, "till_lookup", { p_code: code }); }
     catch (err) { customer = null; ui.error = friendly(err); }
     update();
+    // On a phone the customer's details sit below the camera, so bring them into view after a scan.
+    if (isPhone() && $("detail")) $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   async function addStamps(force) {
