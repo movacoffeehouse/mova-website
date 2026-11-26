@@ -98,6 +98,7 @@
     app.innerHTML = `
       <div class="status"><p class="eyebrow">Hi ${esc(c.first_name)}</p><h1>${headline}</h1><p>${p === 0 ? "You're at the start of the line." : `${p} of ${size} stops done.`}</p></div>
       ${c.rewards_available ? `<div class="ticket${view.celebrate ? " celebrate" : ""}"><strong>${view.celebrate ? "End of the line. Free coffee unlocked." : "Free coffee ready"}</strong><span>Show your card at the till to use it. Any coffee, any size.</span></div>` : ""}
+      ${c.discount_percent ? `<div class="discount-card"><b>${c.discount_percent}% off</b><span>${esc(c.discount_label || "Member discount")}. Show your card at the till and it's taken off your order, every time.</span></div>` : ""}
       <ol class="route" aria-label="Your card: ${p} of ${size} stops">${stops}<li class="stop end${c.rewards_available ? " ready" : ""}"><span class="dot"></span><span class="name">Free coffee</span></li></ol>
       <section class="card" aria-label="Your member card">
         <div class="card-row">

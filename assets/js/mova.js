@@ -21,6 +21,7 @@
     pin_must_be_4_to_6_digits: "PINs must be 4 to 6 digits.",
     pin_required: "Give the new staff member a PIN.",
     not_signed_in: "You've been signed out. Sign in again.",
+    bad_discount: "Discounts must be between 0% and 100%.",
   };
 
   function configured() {

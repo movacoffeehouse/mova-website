@@ -71,6 +71,12 @@ create table if not exists public.redemptions (
 );
 create index if not exists redemptions_customer_idx on public.redemptions (customer_id, created_at desc);
 
+-- Member discounts (e.g. 20% for building tenants). Set by the owner on /admin; shown on the till when scanned.
+alter table public.customers add column if not exists discount_percent int not null default 0 check (discount_percent between 0 and 100);
+alter table public.customers add column if not exists discount_label   text check (char_length(discount_label) <= 60);
+-- The discount that applied when each stamp was added, for reporting.
+alter table public.stamps    add column if not exists discount_percent int not null default 0;
+
 -- Row level security: customers can read only their own rows; nobody writes directly.
 alter table public.customers     enable row level security;
 alter table public.stamps        enable row level security;
@@ -150,6 +156,8 @@ begin
     'code',              c.code,
     'member_since',      c.created_at,
     'marketing_opt_in',  c.marketing_opt_in,
+    'discount_percent',  c.discount_percent,
+    'discount_label',    c.discount_label,
     'card_size',         v_size,
     'progress',          v_progress,
     'total_coffees',     v_total,
@@ -321,8 +329,9 @@ begin
   end if;
 
   v_before := private.coffee_total(cust) / private.card_size();
-  insert into public.stamps (customer_id, qty, moment, shop, staff_member_id, device_user_id)
-  values (cust, p_qty, v_moment, acc.shop, member.id, auth.uid());
+  insert into public.stamps (customer_id, qty, moment, shop, staff_member_id, device_user_id, discount_percent)
+  values (cust, p_qty, v_moment, acc.shop, member.id, auth.uid(),
+          (select discount_percent from public.customers where id = cust));
 
   return jsonb_build_object(
     'status', 'ok',
@@ -356,13 +365,13 @@ begin
     select jsonb_agg(row_to_json(t) order by t.at desc)
     from (
       select 'stamp' as kind, s.id, s.qty, s.moment, s.created_at as at, s.voided_at,
-             c.first_name as customer, c.code, m.name as staff
+             c.first_name as customer, c.code, m.name as staff, s.discount_percent
         from public.stamps s
         join public.customers c on c.id = s.customer_id
         left join public.staff_members m on m.id = s.staff_member_id
        where s.created_at >= day_start and s.shop = acc.shop
       union all
-      select 'reward', r.id, null, null, r.created_at, r.voided_at, c.first_name, c.code, m.name
+      select 'reward', r.id, null, null, r.created_at, r.voided_at, c.first_name, c.code, m.name, 0
         from public.redemptions r
         join public.customers c on c.id = r.customer_id
         left join public.staff_members m on m.id = r.staff_member_id
@@ -416,6 +425,8 @@ begin
     'coffees_today',    (select coalesce(sum(qty),0) from public.stamps where voided_at is null and created_at >= day_start),
     'coffees_this_week',(select coalesce(sum(qty),0) from public.stamps where voided_at is null and created_at >= week_start),
     'free_coffees_used',(select count(*) from public.redemptions where voided_at is null),
+    'discount_members', (select count(*) from public.customers where discount_percent > 0),
+    'discounted_coffees_this_week', (select coalesce(sum(qty),0) from public.stamps where voided_at is null and discount_percent > 0 and created_at >= week_start),
     'moments', (select jsonb_build_object(
         'commute',   coalesce(sum(qty) filter (where moment='commute'),0),
         'mid',       coalesce(sum(qty) filter (where moment='mid'),0),
@@ -425,7 +436,7 @@ begin
     'customers', coalesce((
       select jsonb_agg(row_to_json(t) order by t.last_visit desc nulls last)
       from (
-        select c.first_name, c.email, c.code, c.marketing_opt_in, c.created_at,
+        select c.first_name, c.email, c.code, c.marketing_opt_in, c.created_at, c.discount_percent, c.discount_label,
                private.coffee_total(c.id) as coffees,
                private.coffee_total(c.id) % private.card_size() as progress,
                private.rewards_available(c.id) as rewards_available,
@@ -466,6 +477,21 @@ begin
   return v;
 end $$;
 
+-- Give a member a discount (e.g. 20, 'High Cross tenant'), or remove it with 0.
+create or replace function public.admin_set_discount(p_code text, p_percent int, p_label text) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare cust uuid;
+begin
+  perform private.require_shop(true);
+  if p_percent is null or p_percent not between 0 and 100 then raise exception 'bad_discount' using errcode = '22023'; end if;
+  cust := private.find_customer(p_code);
+  update public.customers
+     set discount_percent = p_percent,
+         discount_label   = case when p_percent = 0 then null else left(nullif(trim(p_label), ''), 60) end
+   where id = cust;
+  return private.card_json(cust);
+end $$;
+
 -- ---------- Who may call what ----------------------------------------
 
 revoke all on schema private from public, anon, authenticated;
@@ -479,7 +505,8 @@ begin
     'till_whoami()', 'till_staff()', 'till_check_pin(uuid, text)', 'till_lookup(text)',
     'till_add_stamps(text, int, uuid, text, boolean)', 'till_redeem(text, uuid, text)',
     'till_today()', 'till_void(text, bigint, uuid, text)',
-    'admin_overview()', 'admin_staff()', 'admin_save_staff(uuid, text, text, boolean)'
+    'admin_overview()', 'admin_staff()', 'admin_save_staff(uuid, text, text, boolean)',
+    'admin_set_discount(text, int, text)'
   ] loop
     execute format('revoke execute on function public.%s from public, anon', f);
     execute format('grant execute on function public.%s to authenticated', f);

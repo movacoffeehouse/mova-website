@@ -4,7 +4,7 @@
   const app = document.getElementById("app");
   const bar = document.getElementById("bar");
   const AREA = "admin";
-  let data = null, staff = [], search = "", msg = { text: "", error: false }, editing = null;
+  let data = null, staff = [], search = "", msg = { text: "", error: false }, editing = null, discEditing = null;
 
   if (!window.MOVA.configured()) {
     app.innerHTML = `<div class="notice"><b>MOVA Miles isn't connected yet.</b><span>Add the Supabase details to assets/js/config.js (see SETUP.md).</span></div>`;
@@ -56,6 +56,7 @@
         <div class="stat"><b>${d.coffees_this_week}</b><span>stamped coffees this week</span></div>
         <div class="stat"><b>${d.free_coffees_used}</b><span>free coffees used</span></div>
         <div class="stat"><b>${d.marketing_opt_ins}</b><span>happy to get emails</span></div>
+        <div class="stat"><b>${d.discount_members}</b><span>members with a discount (${d.discounted_coffees_this_week} discounted coffees this week)</span></div>
       </div>
 
       <section class="panel" aria-label="Coffees by moment of the day">
@@ -88,9 +89,10 @@
             <button class="btn-line btn-small" id="csv" type="button">Download CSV</button>
           </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Coffees</th><th>Card</th><th>Free ready</th><th>Mover type</th><th>Last visit</th><th>Emails OK</th></tr></thead><tbody>
-          ${rows.map((c) => `<tr><td>${esc(c.first_name)}</td><td>${esc(c.email)}</td><td style="font-family:var(--mono)">${esc(c.code)}</td><td class="num">${c.coffees}</td><td class="num">${c.progress}/${d.card_size}</td><td class="num">${c.rewards_available}</td><td>${c.top_moment ? MOMENTS[c.top_moment].persona : "–"}</td><td>${c.last_visit ? ago(c.last_visit) : "–"}</td><td>${c.marketing_opt_in ? "Yes" : "No"}</td></tr>`).join("")
-            || `<tr><td colspan="9" class="muted">${q ? "No members match that search." : "No members yet."}</td></tr>`}
+        <p class="hint">To give someone a discount (for example 20% for High Cross tenants), find them below and click <b>Add discount</b>. It shows on the till every time their card is scanned.</p>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Code</th><th>Discount</th><th>Coffees</th><th>Card</th><th>Free ready</th><th>Mover type</th><th>Last visit</th><th>Emails OK</th></tr></thead><tbody>
+          ${rows.map((c) => `<tr><td>${esc(c.first_name)}</td><td>${esc(c.email)}</td><td style="font-family:var(--mono)">${esc(c.code)}</td><td>${discountCell(c)}</td><td class="num">${c.coffees}</td><td class="num">${c.progress}/${d.card_size}</td><td class="num">${c.rewards_available}</td><td>${c.top_moment ? MOMENTS[c.top_moment].persona : "–"}</td><td>${c.last_visit ? ago(c.last_visit) : "–"}</td><td>${c.marketing_opt_in ? "Yes" : "No"}</td></tr>`).join("")
+            || `<tr><td colspan="10" class="muted">${q ? "No members match that search." : "No members yet."}</td></tr>`}
         </tbody></table></div>
       </section>`;
 
@@ -108,6 +110,40 @@
     }));
     app.querySelectorAll("[data-toggle]").forEach((b) => (b.onclick = () =>
       saveStaff(b.dataset.toggle, null, null, b.dataset.active !== "true", b.dataset.active === "true" ? "Removed from the till." : "Back on the till.")));
+    // Discounts
+    app.querySelectorAll("[data-disc-edit]").forEach((b) => (b.onclick = () => { discEditing = b.dataset.discEdit; render(); const p = $("dp-" + discEditing); if (p) p.focus(); }));
+    app.querySelectorAll("[data-disc-cancel]").forEach((b) => (b.onclick = () => { discEditing = null; render(); }));
+    app.querySelectorAll("[data-disc-remove]").forEach((b) => (b.onclick = () => saveDiscount(b.dataset.discRemove, 0, "", "Discount removed.")));
+    app.querySelectorAll("form[data-disc]").forEach((f) => f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const code = f.dataset.disc;
+      saveDiscount(code, Number($("dp-" + code).value), $("dl-" + code).value, "Discount saved. It will show on the till next time their card is scanned.");
+    }));
+  }
+
+  function discountCell(c) {
+    if (discEditing === c.code) {
+      return `<form class="mini-form" data-disc="${esc(c.code)}" novalidate>
+        <label class="sr" for="dp-${esc(c.code)}">Percent off</label><input id="dp-${esc(c.code)}" type="number" min="1" max="100" value="${c.discount_percent || 20}" style="width:64px">%
+        <label class="sr" for="dl-${esc(c.code)}">Reason</label><input id="dl-${esc(c.code)}" maxlength="60" value="${esc(c.discount_label || "High Cross tenant")}" style="width:150px">
+        <button class="btn btn-small" type="submit">Save</button><button class="link" data-disc-cancel type="button">Cancel</button>
+      </form>`;
+    }
+    if (c.discount_percent) {
+      return `<span class="pill">${c.discount_percent}% off</span> <span class="hint">${esc(c.discount_label || "")}</span>
+        <div class="actions"><button class="link" data-disc-edit="${esc(c.code)}" type="button">Change</button><button class="link" data-disc-remove="${esc(c.code)}" type="button">Remove</button></div>`;
+    }
+    return `<button class="link" data-disc-edit="${esc(c.code)}" type="button">Add discount</button>`;
+  }
+
+  async function saveDiscount(code, percent, label, done) {
+    if (!Number.isInteger(percent) || percent < 0 || percent > 100) { msg = { text: "Discounts must be a whole number between 1 and 100.", error: true }; return render(); }
+    try {
+      await rpc(AREA, "admin_set_discount", { p_code: code, p_percent: percent, p_label: label });
+      msg = { text: done, error: false }; discEditing = null;
+      data = await rpc(AREA, "admin_overview");
+    } catch (err) { msg = { text: friendly(err), error: true }; }
+    render();
   }
 
   async function saveStaff(id, name, pin, active, done) {
@@ -122,10 +158,10 @@
   }
 
   function downloadCSV(rows) {
-    const head = ["first_name", "email", "code", "coffees", "card_progress", "free_coffees_ready", "mover_type", "last_visit", "marketing_opt_in", "joined"];
+    const head = ["first_name", "email", "code", "coffees", "card_progress", "free_coffees_ready", "mover_type", "last_visit", "marketing_opt_in", "joined", "discount_percent", "discount_reason"];
     const cell = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
     const lines = [head.join(",")].concat(rows.map((c) => [c.first_name, c.email, c.code, c.coffees, c.progress, c.rewards_available,
-      c.top_moment ? MOMENTS[c.top_moment].persona : "", c.last_visit || "", c.marketing_opt_in ? "yes" : "no", c.created_at].map(cell).join(",")));
+      c.top_moment ? MOMENTS[c.top_moment].persona : "", c.last_visit || "", c.marketing_opt_in ? "yes" : "no", c.created_at, c.discount_percent || 0, c.discount_label || ""].map(cell).join(",")));
     const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: "mova-miles-members.csv" });
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);

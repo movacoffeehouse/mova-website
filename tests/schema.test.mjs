@@ -124,11 +124,27 @@ await db.exec(`insert into public.stamps (customer_id, qty, moment, shop, create
   ('${ids.amara}', 1, 'commute', 'High Cross', now() - interval '1 day')`);
 const a = await as("amara", "select public.my_card()");
 assert.deepEqual(a.moments, {commute: 4, mid: 0, lunch: 1, afternoon: 0});
+assert.equal(a.discount_percent, 0);
 // 5 coffees on a 3-stop card: one full card, then the last 2 coffees are on the current card.
 assert.equal(a.progress, 2);
 assert.deepEqual(a.stops.map(s => s.moment), ["lunch","commute"]);
 assert.equal(a.history[0].moment, "commute"); assert.equal(a.history.length, 3);
 ok("lifetime moment totals and card stops come back in the right order");
+
+// Discounts
+await fails("till", "select public.admin_set_discount($1, 20, 'High Cross tenant')", [amara.code], "owner_only");
+await fails("amara", "select public.admin_set_discount($1, 20, 'High Cross tenant')", [amara.code], "not_shop_account");
+await fails("owner", "select public.admin_set_discount($1, 120, 'x')", [amara.code], "bad_discount");
+let d = await as("owner", "select public.admin_set_discount($1, 20, '  High Cross tenant ')", [amara.code]);
+assert.equal(d.discount_percent, 20); assert.equal(d.discount_label, "High Cross tenant");
+assert.equal((await as("till", "select public.till_lookup($1)", [amara.code])).discount_percent, 20);
+assert.equal((await as("amara", "select public.my_card()")).discount_label, "High Cross tenant");
+await as("till", "select public.till_add_stamps($1, 1, $2, '1234', true)", [amara.code, priya]);
+assert.equal((await as("till", "select public.till_today()"))[0].discount_percent, 20);
+ok("only the owner can give a discount; the till, the card and the stamp log all show it");
+d = await as("owner", "select public.admin_set_discount($1, 0, 'ignored')", [amara.code]);
+assert.equal(d.discount_percent, 0); assert.equal(d.discount_label, null);
+ok("setting the discount to 0 removes it and its label");
 
 // Owner overview and privacy
 const ov = await as("owner", "select public.admin_overview()");
@@ -148,5 +164,10 @@ const grants = await db.query(`select has_function_privilege('anon', 'public.til
   has_function_privilege('authenticated', 'public.till_lookup(text)', 'execute') b`);
 assert.deepEqual(grants.rows[0], {a: false, b: true});
 ok("signed-out website visitors can't call any MOVA Miles function");
+
+// The schema file must be safe to run again on a live database (how updates are applied).
+await db.exec(schema);
+assert.equal((await db.query(`select count(*)::int n from public.customers`)).rows[0].n, 1);
+ok("running the schema file again keeps existing members and data");
 
 console.log(`\n${passed} checks passed`);

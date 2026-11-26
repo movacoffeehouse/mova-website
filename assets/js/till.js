@@ -143,6 +143,7 @@
     const willEarn = Math.floor((c.progress + ui.qty) / size);
     el.innerHTML = `
       <div class="cust-head"><strong>${esc(c.first_name)}</strong><span class="code">${esc(c.code)}</span></div>
+      ${c.discount_percent ? `<div class="discount-banner" role="status"><b>${c.discount_percent}% OFF</b><span>${esc(c.discount_label || "Member discount")} · take it off their order</span></div>` : ""}
       <span class="mover">${pe.ready ? `<b>${MOMENTS[pe.top].persona}</b> · usually ${MOMENTS[pe.top].range}` : "<b>New Mover</b> · not enough visits yet"}</span>
       <div class="mini" aria-label="${c.progress} of ${size} stamps">${dots}</div>
       <div class="facts">
@@ -183,7 +184,7 @@
     if (!today.length) { el.innerHTML = `<p class="muted">Nothing yet today.</p>`; return; }
     const canUndo = (r) => !r.voided_at && (shop.role === "owner" || Date.now() - new Date(r.at).getTime() < 30 * 60000);
     el.innerHTML = `<table><thead><tr><th>Time</th><th>Customer</th><th>What</th><th>Moment</th><th>Staff</th><th></th></tr></thead><tbody>${
-      today.map((r) => `<tr class="${r.voided_at ? "void" : ""}"><td class="num">${timeHM(r.at)}</td><td>${esc(r.customer)}</td><td>${r.kind === "stamp" ? "+" + r.qty + (r.qty === 1 ? " stamp" : " stamps") : "Free coffee used"}${r.voided_at ? " (undone)" : ""}</td><td>${r.moment ? MOMENTS[r.moment].short : "–"}</td><td>${esc(r.staff || "")}</td><td>${canUndo(r) ? `<button class="link" data-kind="${r.kind}" data-id="${r.id}" type="button">Undo</button>` : ""}</td></tr>`).join("")
+      today.map((r) => `<tr class="${r.voided_at ? "void" : ""}"><td class="num">${timeHM(r.at)}</td><td>${esc(r.customer)}</td><td>${r.kind === "stamp" ? "+" + r.qty + (r.qty === 1 ? " stamp" : " stamps") : "Free coffee used"}${r.discount_percent ? " · " + r.discount_percent + "% off" : ""}${r.voided_at ? " (undone)" : ""}</td><td>${r.moment ? MOMENTS[r.moment].short : "–"}</td><td>${esc(r.staff || "")}</td><td>${canUndo(r) ? `<button class="link" data-kind="${r.kind}" data-id="${r.id}" type="button">Undo</button>` : ""}</td></tr>`).join("")
     }</tbody></table>`;
     el.querySelectorAll("button[data-id]").forEach((b) => (b.onclick = () => undo(b.dataset.kind, Number(b.dataset.id))));
   }
@@ -209,7 +210,8 @@
         const n = ui.qty;
         customer = r.card; ui.confirm = null; ui.qty = 1;
         ui.toast = `Added ${n} ${n === 1 ? "stamp" : "stamps"} for ${esc(customer.first_name)} · ${MOMENTS[r.moment].name}.` +
-          (r.rewards_earned ? ` Card complete: ${r.rewards_earned === 1 ? "a free coffee" : r.rewards_earned + " free coffees"} earned.` : ` ${customer.card_size - customer.progress} to go.`);
+          (r.rewards_earned ? ` Card complete: ${r.rewards_earned === 1 ? "a free coffee" : r.rewards_earned + " free coffees"} earned.` : ` ${customer.card_size - customer.progress} to go.`) +
+          (customer.discount_percent ? ` Remember: ${customer.discount_percent}% off.` : "");
         refreshLog();
       }
     } catch (err) { if (handleError(err)) { ui.busy = false; return; } }
